@@ -46,6 +46,9 @@ var fs = remote.require('fs')
 var fpath = remote.require('path')
 // var fs = require('fs')
 // var electronFs = remote.require('fs');
+const { shell } = remote.require('electron')
+
+
 
 export default {
   name: 'App',
@@ -59,15 +62,22 @@ export default {
       saveDir: "markdown",
       editorArr: [],
       leftEditorArr: [],
+      childrenIndicator: null,
 
     }
   },
   methods: {
     addRightEditor: function () {
       let selector = `#editor2-${this.rightEditors}`
-      this.editorArr.push(newEditor(selector, "# this is new"))
+      this.editorArr.push(this.newEditor(selector, "# this is new"))
       addTripleClickListener(selector, this.rightEditors, this.setChildAsParent)
       this.rightEditors++
+    },
+
+    numToGoodDir: function (num) {
+      let endNum = noExtension(this.parentFile)
+      let dirFromNum = `${fpath.dirname(this.parentFile)}/${endNum}/${num}`
+      return `${this.saveDir}/${dirFromNum}`
     },
 
     numToGoodPath: function (num) {
@@ -106,8 +116,26 @@ export default {
       if (firstAncestor) {
         let ancestorId = firstAncestor.id
         if (ancestorId.indexOf('editor2-') === 0) {
-          console.log(ancestorId.slice(8))
+          let num = ancestorId.slice(8)
+          // num
+          let path = this.numToGoodPath(num)
+          let fullPath = fpath.resolve(path)
+          let folderPath = fpath.resolve(fileToDir(path))
 
+          if (!shell.moveItemToTrash(fullPath)) { return }
+          if (!shell.moveItemToTrash(folderPath)) { return }
+          console.log(`deleted ${fullPath}`)
+
+          let editorId = `editor2-${num}`
+          document.getElementById(editorId).remove()
+          //assign new ids
+          for (let i = parseInt(num) + 1, len = this.editorArr.length + 2; i < len; i++) {
+            let editorId = `editor2-${i}`
+            document.getElementById(editorId).id = `editor2-${i - 1}`
+            console.log(`editor2-${i - 1}`)
+          }
+          //remove by 1
+          rightEditors--
         }
       }
 
@@ -115,6 +143,17 @@ export default {
       // console.log(firstAncestor)
       // document.querySelector("p").closest(".near.ancestor")
 
+    },
+
+    getNumberOfChildren: async function (num) {
+      return Promise
+      let dir = this.numToGoodDir(num)
+      fs.readdir(dir, { withFileTypes: true }, (err, dirents) => {
+        let files = dirents.filter(dirent => dirent.isFile())
+          .map(dirent => dirent.name)
+        console.log(files.length);
+        return files.length
+      })
     },
 
     doEditors: async function () {
@@ -145,7 +184,7 @@ export default {
 
       let parentContent = readFile(fpath.join(this.saveDir, this.parentFile))
       console.log(parentContent)
-      this.leftEditorArr.push(newEditor(`#editor1-1`, parentContent))
+      this.leftEditorArr.push(this.newEditor(`#editor1-1`, parentContent))
       leftTripleClick(`#editor1-1`, this.setParentAsChild)
 
       for (let i = 0; i < length; i++) {
@@ -154,14 +193,36 @@ export default {
 
         let selector = `#editor2-${num}`
 
-        this.editorArr.push(newEditor(selector, contents[i]))
+        this.editorArr.push(this.newEditor(selector, contents[i]))
         addTripleClickListener(selector, num.toString(), this.setChildAsParent)
-        // editor = newEditor(selector, childrenObj[name])
+        // editor = this.newEditor(selector, childrenObj[name])
       }
       let selector = `#editor2-${length + 1}`
       console.log(selector)
-      this.editorArr.push(newEditor(selector))
+      this.editorArr.push(this.newEditor(selector))
       addTripleClickListener(selector, length.toString(), this.setChildAsParent)
+
+      for (let i = 0; i < length; i++) {
+        const name = keys[i]
+        const num = noExtension(name)
+        // let numberOfChildren = this.getNumberOfChildren(num)
+      // console.log(numberOfChildren);
+
+        let selector = `#editor2-${num}`
+        let element = document.querySelector(selector)
+
+
+        let appendTo = element.querySelector('.te-mode-switch')
+        console.log(appendTo)
+        if (appendTo) {
+          console.log(appendTo)
+          let cloned = this.childrenIndicator.cloneNode(true)
+          cloned.innerHTML = await this.getNumberOfChildren(num)
+          appendTo.appendChild(cloned)
+        }
+
+      }
+
 
       /* for (const [name, content] of Object.entries(childrenObj)) {
 } */
@@ -195,8 +256,27 @@ export default {
 
 
     },
+    newEditor: async function (selector, initMarkDown, numberOfChildren) {
+      let element = document.querySelector(selector)
+      const editor = new Editor({
+        initialValue: initMarkDown,
+        el: element,
+        height: 'auto',
+        initialEditType: 'wysiwyg',
+        previewStyle: 'vertical'
+      })
+      editor.getHtml()
+
+      // }
+
+      return editor
+    },
   },
   mounted: function () {
+    this.childrenIndicator = document.createElement('button')
+    this.childrenIndicator.classList.add('te-switch-button')
+    // this.childrenIndicator.classList.add('tui-toolbar-icons')
+
     this.doEditors()
 
     document.addEventListener("keydown", e => {
@@ -210,6 +290,8 @@ export default {
         this.deleteEditor()
       }
     })
+
+
     // ctrlWlistener(selector, length.toString(), this.deleteEditor)
 
   },
@@ -219,8 +301,12 @@ function getSelectionStart() {
   return (node.nodeType == 3 ? node.parentNode : node)
 }
 
+function fileToDir(path) {
+  return `${fpath.dirname(path)}/${noExtension(path)}`
+}
+
 async function dirFromFile(path, data) {
-  let createPath = `${fpath.dirname(path)}/${noExtension(path)}`
+  let createPath = fileToDir(path)
   console.log("createPath", createPath)
   writeFile(path, data)
   if (!fs.existsSync(createPath)) {
@@ -268,17 +354,20 @@ function addTripleClickListener(selector, row, callback) {
   })
 }
 
-function newEditor(selector, initMarkDown) {
+
+/* function newHeightEditor(selector, initMarkDown, height) {
   const editor = new Editor({
     initialValue: initMarkDown,
     el: document.querySelector(selector),
-    height: 'auto',
+    height: height,
     initialEditType: 'wysiwyg',
     previewStyle: 'vertical'
   })
   editor.getHtml()
   return editor
-}
+} */
+
+
 
 
 
