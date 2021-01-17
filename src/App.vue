@@ -204,7 +204,7 @@ console.log("RESET");
       console.log(selector)
       this.editorArr.push(this.newEditor(selector))
       addTripleClickListener(selector, length.toString(), this.setChildAsParent)
-      /* let promises = []
+      let promises = []
       for (let i = 0; i < length; i++) {
         const name = keys[i]
         const num = noExtension(name)
@@ -228,8 +228,8 @@ console.log("RESET");
           }
           resolve()
         }))
-      } */
-      // Promise.all(promises)
+      }
+      Promise.all(promises)
 
     },
 
