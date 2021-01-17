@@ -170,6 +170,7 @@ export default {
       let keys = []
       let contents = []
       let childrenObj = {}
+console.log("RESET");
       this.leftEditorArr = []
       this.editorArr = []
       for (let i = 0; i < length; i++) {
@@ -203,8 +204,7 @@ export default {
       console.log(selector)
       this.editorArr.push(this.newEditor(selector))
       addTripleClickListener(selector, length.toString(), this.setChildAsParent)
-
-      let promises = []
+      /* let promises = []
       for (let i = 0; i < length; i++) {
         const name = keys[i]
         const num = noExtension(name)
@@ -228,8 +228,8 @@ export default {
           }
           resolve()
         }))
-      }
-      await Promise.all(promises)
+      } */
+      // Promise.all(promises)
 
     },
 
@@ -239,9 +239,8 @@ export default {
 } */
 
 
-    saveEverything: async function () {
+    saveEverything: function () {
 
-      console.log(this.leftEditorArr.length)
       for (let i = 0, len = this.leftEditorArr.length; i < len; i++) {
         let editor = this.leftEditorArr[i]
         let data = editor.getMarkdown()
@@ -249,7 +248,7 @@ export default {
         writeFile(path, data)
       }
 
-      console.log(this.editorArr.length)
+      // console.log(this.editorArr.length)
       let len = this.editorArr.length
       for (let i = 0; i < len - 1; i++) {
         let editor = this.editorArr[i]
@@ -265,7 +264,7 @@ export default {
 
 
     },
-    newEditor: async function (selector, initMarkDown, numberOfChildren) {
+    newEditor: function (selector, initMarkDown, numberOfChildren) {
       let element = document.querySelector(selector)
       const editor = new Editor({
         initialValue: initMarkDown,
