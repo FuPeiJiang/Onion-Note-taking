@@ -216,11 +216,14 @@ export default {
 
 
           let appendTo = element.querySelector('.te-mode-switch')
-          console.log(appendTo)
           if (appendTo) {
-            console.log(appendTo)
             let cloned = this.childrenIndicator.cloneNode(true)
             cloned.innerHTML = `${await this.getNumberOfChildren(num)} children`
+            cloned.addEventListener("click", evt => {
+              if (evt.detail === 1) {
+                this.setChildAsParent(num)
+              }
+            })
             appendTo.appendChild(cloned)
           }
           resolve()
@@ -232,7 +235,7 @@ export default {
 
 
 
-      /* for (const [name, content] of Object.entries(childrenObj)) {
+    /* for (const [name, content] of Object.entries(childrenObj)) {
 } */
 
 
@@ -272,9 +275,6 @@ export default {
         previewStyle: 'vertical'
       })
       editor.getHtml()
-
-      // }
-
       return editor
     },
   },
