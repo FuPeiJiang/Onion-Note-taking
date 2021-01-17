@@ -2,7 +2,7 @@
 
 
 <template>
-  <button v-on:click="printDir">fefefefefefef</button>
+  <!-- <button v-on:click="printDir">fefefefefefef</button> -->
 
   <div class="horizontal" style="display: flex; flex-direction: horizontal">
     <div class="vertical">
@@ -24,10 +24,11 @@
         v-for="num in rightEditors"
         :key="num.key"
         v-bind:id="'editor2-' + num"
+        class="editor-class"
         @contextmenu="setChildAsParent(num)"
       ></div>
 
-      <button v-on:click="addRightEditor">Add Child Text Editor</button>
+      <!-- <button v-on:click="addRightEditor">Add Child Text Editor</button> -->
     </div>
   </div>
 </template>
@@ -97,6 +98,24 @@ export default {
       }
     },
 
+    deleteEditor: function () {
+      // alert(row)
+
+      let caretElement = getSelectionStart()
+      let firstAncestor = caretElement.closest(".editor-class")
+      if (firstAncestor) {
+        let ancestorId = firstAncestor.id
+        if (ancestorId.indexOf('editor2-') === 0) {
+          console.log(ancestorId.slice(8))
+
+        }
+      }
+
+
+      // console.log(firstAncestor)
+      // document.querySelector("p").closest(".near.ancestor")
+
+    },
 
     doEditors: async function () {
       this.leftEditors = 0
@@ -157,17 +176,23 @@ export default {
         let editor = this.leftEditorArr[i]
         let data = editor.getMarkdown()
         let path = `${this.saveDir}/${i + 1}.md`
-        if (data) { writeFile(path, data) }
+        writeFile(path, data)
       }
 
       console.log(this.editorArr.length)
-
-      for (let i = 0, len = this.editorArr.length; i < len; i++) {
+      let len = this.editorArr.length
+      for (let i = 0; i < len - 1; i++) {
         let editor = this.editorArr[i]
         let data = editor.getMarkdown()
         let path = this.numToGoodPath(i + 1)
-        if (data) { writeFile(path, data) }
+        writeFile(path, data)
       }
+      let editor = this.editorArr[len - 1]
+      let data = editor.getMarkdown()
+      let path = this.numToGoodPath(len)
+      if (data) { dirFromFile(path, data) }
+
+
 
     },
   },
@@ -175,12 +200,32 @@ export default {
     this.doEditors()
 
     document.addEventListener("keydown", e => {
-      if ((e.ctrlKey || e.metaKey) && e.which === 83) {
+      if ((e.ctrlKey || e.metaKey) && e.code === "KeyS") {
         this.saveEverything()
       }
     })
+    document.addEventListener("keydown", e => {
+      if ((e.ctrlKey || e.metaKey) && e.code === "KeyD") {
+        // if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === "KeyD") {
+        this.deleteEditor()
+      }
+    })
+    // ctrlWlistener(selector, length.toString(), this.deleteEditor)
 
   },
+}
+function getSelectionStart() {
+  var node = document.getSelection().anchorNode
+  return (node.nodeType == 3 ? node.parentNode : node)
+}
+
+async function dirFromFile(path, data) {
+  let createPath = `${fpath.dirname(path)}/${noExtension(path)}`
+  console.log("createPath", createPath)
+  writeFile(path, data)
+  if (!fs.existsSync(createPath)) {
+    fs.mkdirSync(createPath)
+  }
 }
 
 async function writeFile(path, data) {
@@ -196,6 +241,15 @@ function noExtension(path) {
 
 function readFile(path) {
   return fs.readFileSync(path).toString()
+}
+
+function ctrlWlistener(selector, row, callback) {
+  document.querySelector(selector).addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.code === "KeyD") {
+      // if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === "KeyD") {
+      callback(row)
+    }
+  })
 }
 
 function leftTripleClick(selector, callback) {
