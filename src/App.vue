@@ -145,14 +145,16 @@ export default {
 
     },
 
-    getNumberOfChildren: async function (num) {
-      return Promise
-      let dir = this.numToGoodDir(num)
-      fs.readdir(dir, { withFileTypes: true }, (err, dirents) => {
-        let files = dirents.filter(dirent => dirent.isFile())
-          .map(dirent => dirent.name)
-        console.log(files.length);
-        return files.length
+    getNumberOfChildren: function (num) {
+      return new Promise(async (resolve) => {
+
+        let dir = this.numToGoodDir(num)
+        fs.readdir(dir, { withFileTypes: true }, (err, dirents) => {
+          let files = dirents.filter(dirent => dirent.isFile())
+            .map(dirent => dirent.name)
+          console.log(files.length)
+          resolve(files.length)
+        })
       })
     },
 
@@ -202,33 +204,37 @@ export default {
       this.editorArr.push(this.newEditor(selector))
       addTripleClickListener(selector, length.toString(), this.setChildAsParent)
 
+      let promises = []
       for (let i = 0; i < length; i++) {
         const name = keys[i]
         const num = noExtension(name)
         // let numberOfChildren = this.getNumberOfChildren(num)
-      // console.log(numberOfChildren);
+        // console.log(numberOfChildren);
+        promises.push(new Promise(async (resolve) => {
+          let selector = `#editor2-${num}`
+          let element = document.querySelector(selector)
 
-        let selector = `#editor2-${num}`
-        let element = document.querySelector(selector)
 
-
-        let appendTo = element.querySelector('.te-mode-switch')
-        console.log(appendTo)
-        if (appendTo) {
+          let appendTo = element.querySelector('.te-mode-switch')
           console.log(appendTo)
-          let cloned = this.childrenIndicator.cloneNode(true)
-          cloned.innerHTML = await this.getNumberOfChildren(num)
-          appendTo.appendChild(cloned)
-        }
-
+          if (appendTo) {
+            console.log(appendTo)
+            let cloned = this.childrenIndicator.cloneNode(true)
+            cloned.innerHTML = `${await this.getNumberOfChildren(num)} children`
+            appendTo.appendChild(cloned)
+          }
+          resolve()
+        }))
       }
+      await Promise.all(promises)
+
+    },
+
 
 
       /* for (const [name, content] of Object.entries(childrenObj)) {
 } */
 
-
-    },
 
     saveEverything: async function () {
 
