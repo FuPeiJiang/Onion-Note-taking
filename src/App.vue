@@ -69,7 +69,7 @@ export default {
   methods: {
     addRightEditor: function () {
       let selector = `#editor2-${this.rightEditors}`
-      this.editorArr.push(this.newEditor(selector, "# this is new"))
+      this.editorArr.push(this.newEditor(selector))
       addTripleClickListener(selector, this.rightEditors, this.setChildAsParent)
       this.rightEditors++
     },
@@ -126,14 +126,34 @@ export default {
           if (!shell.moveItemToTrash(folderPath)) { return }
           console.log(`deleted ${fullPath}`)
 
+
+
+          // if (!fs.renameSync(oldPath, newPath)) { return }
+
+
+
           let editorId = `editor2-${num}`
           document.getElementById(editorId).remove()
+          let len = this.editorArr.length + 2
           //assign new ids
-          for (let i = parseInt(num) + 1, len = this.editorArr.length + 2; i < len; i++) {
+          for (let i = parseInt(num) + 1; i < len; i++) {
+            this.editorArr.splice(i - 1)
             let editorId = `editor2-${i}`
             document.getElementById(editorId).id = `editor2-${i - 1}`
             console.log(`editor2-${i - 1}`)
           }
+         /*  for (let i = parseInt(num) + 1, len = this.editorArr.length + 2; i < len; i++) {
+
+            document.getElementById(editorId).id = `editor2-${i - 1}`
+            console.log(`editor2-${i - 1}`)
+
+
+
+          }
+          let path = this.numToGoodPath(num)
+          let fullPath = fpath.resolve(path)
+          let folderPath = fpath.resolve(fileToDir(path))
+ */
           //remove by 1
           rightEditors--
         }
@@ -170,7 +190,7 @@ export default {
       let keys = []
       let contents = []
       let childrenObj = {}
-console.log("RESET");
+      console.log("RESET")
       this.leftEditorArr = []
       this.editorArr = []
       for (let i = 0; i < length; i++) {
@@ -259,7 +279,10 @@ console.log("RESET");
       let editor = this.editorArr[len - 1]
       let data = editor.getMarkdown()
       let path = this.numToGoodPath(len)
-      if (data) { dirFromFile(path, data) }
+      if (data) { 
+        dirFromFile(path, data) 
+        this.addRightEditor()
+      }
 
 
 
@@ -297,7 +320,6 @@ console.log("RESET");
     })
 
 
-    // ctrlWlistener(selector, length.toString(), this.deleteEditor)
 
   },
 }
