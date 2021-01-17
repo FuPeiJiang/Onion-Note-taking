@@ -6,11 +6,12 @@
 
   <div class="horizontal" style="display: flex; flex-direction: horizontal">
     <div class="vertical">
-      <div v-for="num in leftEditors"
-        :key="num.key" 
+      <div
+        v-for="num in leftEditors"
+        :key="num.key"
         v-bind:id="'editor1-' + num"
         @contextmenu="setParentAsChild"
-        ></div>
+      ></div>
     </div>
     <!--Side Bar-->
     <div class="vertical">
@@ -54,13 +55,16 @@ export default {
       Editor: null,
       isHidden: false,
       parentFile: '1.md',
-      saveDir: "markdown"
+      saveDir: "markdown",
+      editorArr: [],
+      leftEditorArr: [],
+
     }
   },
   methods: {
     addRightEditor: function () {
       let selector = `#editor2-${this.rightEditors}`
-      newEditor(selector, "# this is new")
+      this.editorArr.push(newEditor(selector, "# this is new"))
       addTripleClickListener(selector, this.rightEditors, this.setChildAsParent)
       this.rightEditors++
     },
@@ -68,23 +72,24 @@ export default {
     // console.log(getDirContents(this.saveDir))
     // },
 
-    setChildAsParent : function(row) {
-      if (row<this.rightEditors - 1) {
+    setChildAsParent: function (row) {
+      if (row < this.rightEditors - 1) {
         let num = noExtension(this.parentFile)
         this.parentFile = `${fpath.dirname(this.parentFile)}/${num}/${row}.md`
-        console.log(this.parentFile);
+        console.log(this.parentFile)
         this.doEditors()
       }
     },
 
-    setParentAsChild : function() {
-          // alert(row)
-          // console.log(this.parentFile)
-          // console.log(`${fpath.dirname(this.parentFile)}.md`);
-      this.parentFile = `${fpath.dirname(this.parentFile)}.md`
-      console.log(`ok   ${this.parentFile}`);
-      this.doEditors()
+    setParentAsChild: function () {
+      console.log(this.parentFile)
+      if (!(this.parentFile === "1.md" || this.parentFile === "./1.md")) {
+        this.parentFile = `${fpath.dirname(this.parentFile)}.md`
+        console.log(`ok   ${this.parentFile}`)
+        this.doEditors()
+      }
     },
+
 
 
 
@@ -95,24 +100,18 @@ export default {
       let num = noExtension(this.parentFile)
 
 
-
-      // var childrenLength = 0
-      // let files = await readFiles(`${this.saveDir}/${num}`)
-
-      // alert(`${this.saveDir}/${fpath.dirname(this.parentFile)}/${num}`)
-
       let arr = await readFiles(`${this.saveDir}/${fpath.dirname(this.parentFile)}/${num}`)
       let length = arr.length
       let keys = []
       let contents = []
       let childrenObj = {}
-    for (let i = 0; i < length; i++) {
-        const element=arr[i]
+      for (let i = 0; i < length; i++) {
+        const element = arr[i]
         keys.push(element[0])
         contents.push(element[1])
         childrenObj[element[0]] = element[1]
       }
-      this.rightEditors=length + 2
+      this.rightEditors = length + 2
       this.leftEditors = 1
       await this.nextTick
       console.log(childrenObj)
@@ -120,75 +119,46 @@ export default {
 
       let parentContent = readFile(fpath.join(this.saveDir, this.parentFile))
       console.log(parentContent)
-      newEditor(`#editor1-1`, parentContent)
-        leftTripleClick(`#editor1-1`, this.setParentAsChild)
+      this.leftEditorArr.push(newEditor(`#editor1-1`, parentContent))
+      leftTripleClick(`#editor1-1`, this.setParentAsChild)
 
-      // var childrenObj = {}
-      // var childrenObj = await getDirContents(`${this.saveDir}/${num}/`)
-
-      // var childrenObj = files.reduce((obj, item) => (obj[item.key] = item.value, obj) ,{});
-
-
-// console.log(getDirContents(`${this.saveDir}/${num}`))
-
-      // console.log(childrenObj)
-      // return
-      // readFiles(`${this.saveDir}/${num}/`, function (filename, content) {
-      // keys.push(filename)
-      // childrenObj[filename] = content
-      // childrenLength+=1
-      // console.log(childrenLength)
-      // }, function (err) {
-      // throw err
-      // })
-
-      console.log("how is this before")
-      // for (const [key, value] of Object.entries(childrenObj)) {
-      // console.log(key, value);
-      // }
-      // return
       for (let i = 0; i < length; i++) {
         const name = keys[i]
         const num = noExtension(name)
 
         let selector = `#editor2-${num}`
-        
+
         let editor = newEditor(selector, contents[i])
+        // this.editorArr.push(newEditor(selector, contents[i])
         addTripleClickListener(selector, num.toString(), this.setChildAsParent)
         // editor = newEditor(selector, childrenObj[name])
       }
       let selector = `#editor2-${length + 1}`
-      console.log(selector);
+      console.log(selector)
+      // ths.editorArr.push(newEditor(selector)
       let editor = newEditor(selector)
       addTripleClickListener(selector, length.toString(), this.setChildAsParent)
 
       /* for (const [name, content] of Object.entries(childrenObj)) {
-        let num = noExtension(name)
-        console.log(num)
-
-        let selector = `#editor2-${num}`
-        console.log(content)
-        editor = newEditor(selector, content)
-      } */
+} */
 
 
-      // for (let i = 1, len = this.rightEditors; i < len; i++) {
-
-      // }
     },
-    /* update: function () {
-      for (var i = 0; i < editorArray.length; i++) {
-        if (document.getElementById("#editor1-" + stringify(i)).getValue() != editorArray[i]) {
-          //UPdate a save 
-        }
-      }
+
+    /* saveEverything: function () {
+      console.log(6546)
+
+
     }, */
   },
   mounted: function () {
-
-
     this.doEditors()
 
+    // document.addEventListener("keydown", e => {
+    // if (e.ctrlKey && e.which === 83) {
+    // this.saveEverything()
+    // }
+    // })
 
   },
 }
@@ -205,7 +175,7 @@ function readFile(path) {
 function leftTripleClick(selector, callback) {
   document.querySelector(selector).addEventListener('click', function (evt) {
     if (evt.detail === 3) {
-        callback()
+      callback()
     }
   })
 }
@@ -213,7 +183,7 @@ function leftTripleClick(selector, callback) {
 function addTripleClickListener(selector, row, callback) {
   document.querySelector(selector).addEventListener('click', function (evt) {
     if (evt.detail === 3) {
-        callback(row);
+      callback(row)
     }
   })
 }
@@ -334,14 +304,14 @@ function readFiles(dirname) {
   return new Promise((resolve, reject) => {
     fs.readdir(dirname, { withFileTypes: true }, function (err, dirents) {
       if (err) return reject(err)
-         const filenames = dirents
+      const filenames = dirents
         .filter(dirent => dirent.isFile())
-        .map(dirent => dirent.name);
+        .map(dirent => dirent.name)
       promiseAllP(filenames,
         (filename, index, resolve, reject) => {
           fs.readFile(fpath.resolve(dirname, filename), 'utf-8', function (err, content) {
             if (err) return reject(err)
-            return resolve([ filename, content ])
+            return resolve([filename, content])
             // return resolve({ filename: content })
             // return resolve({ filename: filename, contents: content })
           })
