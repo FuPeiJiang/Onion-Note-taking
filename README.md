@@ -1,19 +1,9 @@
-# no-router
+watch here : https://drive.google.com/file/d/1y3IOksO5xnawKo9ONrGj7oz2cwVrOeqm/view?usp=sharing
 
-## Project setup
-```
-yarn install
-```
+ctrl + s to save<br>
+ctrl + d to delete selected
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
+right click on right editor to move to right of tree<br>
+right click on left editor to move to left of tree<br>
+triple left click works too
 
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
