@@ -68,14 +68,21 @@ export default {
       addTripleClickListener(selector, this.rightEditors, this.setChildAsParent)
       this.rightEditors++
     },
-    // printDir: function () {
-    // console.log(getDirContents(this.saveDir))
-    // },
+
+    numToGoodPath: function (num) {
+      return `${this.saveDir}/${this.pathFromNum(num)}`
+    },
+
+    pathFromNum: function (num) {
+      let endNum = noExtension(this.parentFile)
+      return `${fpath.dirname(this.parentFile)}/${endNum}/${num}.md`
+    },
 
     setChildAsParent: function (row) {
       if (row < this.rightEditors - 1) {
-        let num = noExtension(this.parentFile)
-        this.parentFile = `${fpath.dirname(this.parentFile)}/${num}/${row}.md`
+        // let num = noExtension(this.parentFile)
+        // this.parentFile = `${fpath.dirname(this.parentFile)}/${num}/${row}.md`
+        this.parentFile = this.pathFromNum(row)
         console.log(this.parentFile)
         this.doEditors()
       }
@@ -91,8 +98,6 @@ export default {
     },
 
 
-
-
     doEditors: async function () {
       this.leftEditors = 0
       this.rightEditors = 0
@@ -105,6 +110,8 @@ export default {
       let keys = []
       let contents = []
       let childrenObj = {}
+      this.leftEditorArr = []
+      this.editorArr = []
       for (let i = 0; i < length; i++) {
         const element = arr[i]
         keys.push(element[0])
@@ -128,15 +135,13 @@ export default {
 
         let selector = `#editor2-${num}`
 
-        let editor = newEditor(selector, contents[i])
-        // this.editorArr.push(newEditor(selector, contents[i])
+        this.editorArr.push(newEditor(selector, contents[i]))
         addTripleClickListener(selector, num.toString(), this.setChildAsParent)
         // editor = newEditor(selector, childrenObj[name])
       }
       let selector = `#editor2-${length + 1}`
       console.log(selector)
-      // ths.editorArr.push(newEditor(selector)
-      let editor = newEditor(selector)
+      this.editorArr.push(newEditor(selector))
       addTripleClickListener(selector, length.toString(), this.setChildAsParent)
 
       /* for (const [name, content] of Object.entries(childrenObj)) {
@@ -145,24 +150,45 @@ export default {
 
     },
 
-    /* saveEverything: function () {
-      console.log(6546)
+    saveEverything: async function () {
 
+      console.log(this.leftEditorArr.length)
+      for (let i = 0, len = this.leftEditorArr.length; i < len; i++) {
+        let editor = this.leftEditorArr[i]
+        let data = editor.getMarkdown()
+        let path = `${this.saveDir}/${i + 1}.md`
+        if (data) { writeFile(path, data) }
+      }
 
-    }, */
+      console.log(this.editorArr.length)
+
+      for (let i = 0, len = this.editorArr.length; i < len; i++) {
+        let editor = this.editorArr[i]
+        let data = editor.getMarkdown()
+        let path = this.numToGoodPath(i + 1)
+        if (data) { writeFile(path, data) }
+      }
+
+    },
   },
   mounted: function () {
     this.doEditors()
 
-    // document.addEventListener("keydown", e => {
-    // if (e.ctrlKey && e.which === 83) {
-    // this.saveEverything()
-    // }
-    // })
+    document.addEventListener("keydown", e => {
+      if ((e.ctrlKey || e.metaKey) && e.which === 83) {
+        this.saveEverything()
+      }
+    })
 
   },
 }
 
+async function writeFile(path, data) {
+  fs.writeFile(path, data, 'utf-8', function (err) {
+    if (err) throw err
+    console.log(`${path} saved!`)
+  })
+}
 
 function noExtension(path) {
   return fpath.parse(path).name
@@ -197,7 +223,6 @@ function newEditor(selector, initMarkDown) {
     previewStyle: 'vertical'
   })
   editor.getHtml()
-  console.log(editor.getMarkdown())
   return editor
 }
 
