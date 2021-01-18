@@ -29,6 +29,11 @@ async function createWindow() {
     }
   })
 
+/*   win.webContents.on('did-finish-load', () => {
+    //Create the browser window
+    win.setTitle('Onion Notetaking')
+  }) */
+
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
@@ -39,6 +44,8 @@ async function createWindow() {
     win.loadURL('app://./index.html')
   }
 }
+
+
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {

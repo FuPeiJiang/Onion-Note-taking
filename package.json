@@ -2,7 +2,6 @@
   "name": "no-router",
   "version": "0.1.0",
   "private": true,
-
   "postinstall": "electron-builder install-app-deps",
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -11,7 +10,6 @@
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
-
   },
   "main": "background.js",
   "dependencies": {
@@ -23,9 +21,8 @@
     "@vue/compiler-sfc": "^3.0.0",
     "electron": "^9.0.0",
     "electron-devtools-installer": "^3.1.0",
-    "electron-rebuild": "^2.3.4",
     "vue-cli-plugin-electron-builder": "~2.0.0-rc.5"
   },
-  "author" : "FuPeiJiang",
+  "author": "FuPeiJiang",
   "description": "infinite depth tree markdown editor"
 }
