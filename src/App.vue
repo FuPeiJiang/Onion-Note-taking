@@ -261,12 +261,25 @@ export default {
 
     saveEverything: function () {
 
-      for (let i = 0, len = this.leftEditorArr.length; i < len; i++) {
+        let editor, data, path
+        editor = this.leftEditorArr[0]
+        data = editor.getMarkdown()
+        // console.log(removeExtension(this.parentFile))
+        path = `${this.saveDir}/${this.parentFile}`
+        // console.log(path)
+        // return
+        writeFile(path, data)
+
+
+      /* for (let i = 0, len = this.leftEditorArr.length; i < len; i++) {
         let editor = this.leftEditorArr[i]
         let data = editor.getMarkdown()
-        let path = `${this.saveDir}/${i + 1}.md`
+        // console.log(removeExtension(this.parentFile))
+        let path = `${this.saveDir}/${this.parentFile}/${i + 1}.md`
+        console.log(path)
+        return
         writeFile(path, data)
-      }
+      } */
 
       // console.log(this.editorArr.length)
       let len = this.editorArr.length
@@ -276,9 +289,9 @@ export default {
         let path = this.numToGoodPath(i + 1)
         writeFile(path, data)
       }
-      let editor = this.editorArr[len - 1]
-      let data = editor.getMarkdown()
-      let path = this.numToGoodPath(len)
+      editor = this.editorArr[len - 1]
+      data = editor.getMarkdown()
+      path = this.numToGoodPath(len)
       if (data) { 
         dirFromFile(path, data) 
         this.addRightEditor()
@@ -346,6 +359,10 @@ async function writeFile(path, data) {
     if (err) throw err
     console.log(`${path} saved!`)
   })
+}
+
+function removeExtension(path) {
+  return `${fpath.dirname(path)}/${fpath.parse(path).name}`
 }
 
 function noExtension(path) {
