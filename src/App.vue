@@ -240,6 +240,7 @@ export default {
           if (appendTo) {
             let cloned = this.childrenIndicator.cloneNode(true)
             cloned.innerHTML = `${await this.getNumberOfChildren(num)} children`
+            // cloned.innerHTML = `<b>${await this.getNumberOfChildren(num)}</b> children`
             cloned.addEventListener("click", evt => {
               if (evt.detail === 1) {
                 this.setChildAsParent(num)
