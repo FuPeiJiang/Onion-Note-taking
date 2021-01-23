@@ -1,5 +1,5 @@
 {
-  "name": "no-router",
+  "name": "onion-note-taking",
   "version": "0.1.0",
   "private": true,
   "postinstall": "electron-builder install-app-deps",
